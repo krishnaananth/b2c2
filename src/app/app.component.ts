@@ -2,10 +2,12 @@ import { Component } from '@angular/core';
 
 import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
+import { concat } from 'rxjs';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 class Product{
   name: string;
+  sacCode: string;
   price: number;
   qty: number;
 }
@@ -14,7 +16,11 @@ class Invoice{
   address: string;
   contactNo: number;
   email: string;
-  
+  invno: string;
+  invdt: Date;
+  invdt2: string;
+  qr: string;
+
   products: Product[] = [];
   additionalDetails: string;
 
@@ -32,29 +38,79 @@ export class AppComponent {
   invoice = new Invoice(); 
   
   generatePDF(action = 'open') {
+
+    let qra1 = "upi://pay?pa=bhelbhpv@sbi&pn=Bharat Heavy Electricals Ltd.&tn=Supplier GSTIN. 37AAACB4146P7Z8; Bank A/c No. 33276118389; IFSC Code. SBIN0001675; InvNo. ";
+    let qra2 = ";  InvDt. ";
+    let qra3 = ";  Total Inv Val. ";
+    let qra4 = "; Taxable Value. ";
+    let qra5 = "&am=";
+    let qra6 = "&mode=01";
+//this.invoice.invdt2 = String(this.invoice.invdt.getDate()).padStart(2, '0') + "-" + String(this.invoice.invdt.getMonth() + 1).padStart(2, '0') + "-" + this.invoice.invdt.getFullYear();
+//this.invoice.invdt2 = this.invoice.invdt.toLocaleDateString();  
+this.invoice.qr = qra1 + this.invoice.invno + qra2 + this.invoice.invdt + qra3 + this.invoice.products.reduce((sum, p)=> sum + (p.price ), 0).toFixed(2) + qra4 + this.invoice.products.reduce((sum, p)=> sum + (p.price * ( p.qty / 100)), 0).toFixed(2) + qra5 + this.invoice.products.reduce((sum, p)=> sum + (p.price * (1 + p.qty / 100)), 0).toFixed(2) + qra6;
+    //this.invoice.qr = 'upi://pay?pa=rahul@okhdfcbank&pn=GSTZen Demo Private Limited&tn=Supplier GSTIN. 37AAACB4146P7Z8; Bank A/c No. 0365856004518963; IFSC Code. SIBL0000369; InvNo. INV/001; InvDt. 16-Jul-2021; Total Inv Val. 100; Taxable Value. 100&am=100&mode=01';
+    concat
+    
     let docDefinition = {
       content: [
         {
-          text: 'ELECTRONIC SHOP',
+          text: 'Bharat Heavy Electricals Limited',
           fontSize: 16,
           alignment: 'center',
-          color: '#047886'
+          color: 'black'
         },
         {
-          text: 'INVOICE',
-          fontSize: 20,
+          text: 'Heavy Plates and Vessels Plant',
+          fontSize: 14,
+          alignment: 'center',
+          color: 'black'
+        },
+        {
+          text: 'Visakhapatnam - 530012, AP, India',
+          fontSize: 12,
+          alignment: 'center',
+          color: 'black'
+        },
+        {
+          text: 'GSTIN: 37AAACB4146P7Z8',
+          fontSize: 12,
+          alignment: 'center',
+          color: 'black'
+        },
+        {
+          text: '--------------------------------------',
+          fontSize: 16,
+          alignment: 'center',
+         color: 'black'
+        },
+
+
+        {
+          text: 'B2C Invoice',
+          fontSize: 16,
           bold: true,
           alignment: 'center',
           decoration: 'underline',
-          color: 'skyblue'
+          color: 'black'
         },
-        {
-          text: 'Customer Details',
-          style: 'sectionHeader'
-        },
+
+
+
         {
           columns: [
-            [
+            [         {
+              text: `Invoice No.: ${this.invoice.invno}`
+              //alignment: 'right'
+            },
+            { 
+              text: `Invoice Dt.: ${this.invoice.invdt}`
+              //alignment: 'right'
+            },  
+              
+              {
+              text: 'Customer Details',
+              style: 'sectionHeader'
+            },
               {
                 text: this.invoice.customerName,
                 bold:true
@@ -64,14 +120,8 @@ export class AppComponent {
               { text: this.invoice.contactNo }
             ],
             [
-              {
-                text: `Date: ${new Date().toLocaleString()}`,
-                alignment: 'right'
-              },
-              { 
-                text: `Bill No : ${((Math.random() *1000).toFixed(0))}`,
-                alignment: 'right'
-              }
+              { qr: `${this.invoice.qr}`, fit: '200' ,
+              alignment: 'right'}
             ]
           ]
         },
@@ -82,11 +132,11 @@ export class AppComponent {
         {
           table: {
             headerRows: 1,
-            widths: ['*', 'auto', 'auto', 'auto'],
+            widths: ['*','auto', 'auto', 'auto', 'auto'],
             body: [
-              ['Product', 'Price', 'Quantity', 'Amount'],
-              ...this.invoice.products.map(p => ([p.name, p.price, p.qty, (p.price*p.qty).toFixed(2)])),
-              [{text: 'Total Amount', colSpan: 3}, {}, {}, this.invoice.products.reduce((sum, p)=> sum + (p.qty * p.price), 0).toFixed(2)]
+              ['Service Description', 'SAC Code', 'Value', 'GST %','Amount'],
+              ...this.invoice.products.map(p => ([p.name, p.sacCode, p.price, p.qty, (p.price * (1 + p.qty / 100)).toFixed(2)])),
+              [{text: 'Total Amount', colSpan: 4},{}, {}, {}, this.invoice.products.reduce((sum, p)=> sum + (p.price * (1 + p.qty / 100)), 0).toFixed(2)]
             ]
           }
         },
@@ -100,7 +150,7 @@ export class AppComponent {
         },
         {
           columns: [
-            [{ qr: `${this.invoice.customerName}`, fit: '50' }],
+            [],
             [{ text: 'Signature', alignment: 'right', italics: true}],
           ]
         },
