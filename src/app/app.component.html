@@ -13,6 +13,14 @@
                         <h4 class="card-title">Customer Details</h4>
                         <div class="row">
                             <div class="col-md-8">
+
+                                <div class="form-group">
+                                    <label for="invno">Invoice No.</label>
+                                    <input type="text" class="form-control" name="invno" id="invno"
+                                        [ngClass]="{'is-invalid': invoiceForm.submitted && invno.invalid}"
+                                        [(ngModel)]="invoice.invno" #invno="ngModel" required>
+                                </div>
+
                                 <div class="form-group">
                                     <label for="name">Name</label>
                                     <input type="text" class="form-control" name="name" id="name"
@@ -27,6 +35,12 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="invdt">Invoice Dt.</label>
+                                    <input type="date" class="form-control" name="invdt" id="invdt"
+                                    [ngClass]="{'is-invalid': invoiceForm.submitted && invdt.invalid}"
+                                    [(ngModel)]="invoice.invdt" #invdt="ngModel" required>
+                                </div>
                                 <div class="form-group">
                                     <label for="email">Email ID</label>
                                     <input type="email" class="form-control" name="email" id="email"
@@ -50,10 +64,11 @@
                             <table class="table">
                                 <thead>
                                     <tr>
-                                        <th width="25%">Product</th>
-                                        <th width="25%">Price</th>
-                                        <th width="25%">Quantity</th>
-                                        <th width="25%">Amount</th>
+                                        <th width="20%">Service Description</th>
+                                        <th width="20%">SAC Code</th>
+                                        <th width="20%">Value</th>
+                                        <th width="20%">GST %</th>
+                                        <th width="20%">Amount</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -65,6 +80,11 @@
                                                 required>
                                         </td>
                                         <td>
+                                            <input type="number" class="form-control" name="sacCode{{i}}" id="sacCode" 
+                                                [ngClass]="{'is-invalid': invoiceForm.submitted && SacCode.invalid}"
+                                                [(ngModel)]="product.sacCode" #ProductSacCode="ngModel" required>
+                                        </td>  
+                                        <td>
                                             <input type="number" class="form-control" name="price{{i}}" id="price"
                                                 [ngClass]="{'is-invalid': invoiceForm.submitted && ProductPrice.invalid}"
                                                 [(ngModel)]="product.price" #ProductPrice="ngModel" required>
@@ -75,7 +95,7 @@
                                                 [(ngModel)]="product.qty" #ProductQty="ngModel" required>
                                         </td>
                                         <td>
-                                            {{product.price * product.qty || ''}}
+                                            {{(product.price * (1 + product.qty / 100 )).toFixed(2) || ''}}
                                         </td>
                                     </tr>
                                 </tbody>
@@ -109,9 +129,9 @@
 </form>
 <footer class="fixed-bottom">
     <div class="bg-light text-center p-2">
-        <h6>Made with 💗 by
+      <!--  <h6>Made with 💗 by
             <a class="twitter-follow-button" href="https://twitter.com/ankit_ngdevelop" target="_blank"> <i class="fa fa-twitter"
                     aria-hidden="true"></i>Ankit_NgDevelop</a>.
-        </h6>
+        </h6> -->
     </div>
 </footer>
